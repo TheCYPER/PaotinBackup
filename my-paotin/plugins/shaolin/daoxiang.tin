@@ -1,0 +1,13 @@
+#nop 道相禅师对你说道：你可以向我打听以下的内容。;
+#nop 皮围脖、铁护腰、僧鞋、皮手套、铁背心、铁指套、铁护腕;
+
+#alias ask_all {
+	ask daoxiang about 皮围脖;
+	#delay 1 {ask daoxiang about 铁护腰};
+	#delay 3 {ask daoxiang about 僧鞋};
+	#delay 5 {ask daoxiang about 皮手套};
+	#delay 7 {ask daoxiang about 铁背心};
+	#delay 9 {ask daoxiang about 铁指套};
+	#delay 11 {ask daoxiang about 铁护腕};
+	#delay 13 {wear all};
+};

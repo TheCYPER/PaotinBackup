@@ -1,0 +1,66 @@
+#alias {tuna.tuna} {
+    #local allow-recover {@default{%1;false}};
+
+    #if { @char.IsBusy{} } {
+        #return;
+    };
+
+    #if { $char[HP][食物] < 200 } {
+        eat $char[favorite][food];
+        eat baicai;
+        eat doufu;
+        eat dianxin;
+    };
+
+    #if { $char[HP][饮水] < 200 } {
+        eat $char[favorite][water];
+        drink;
+    };
+
+    #if { $char[HP][精神百分比] < 75 } {
+        yun regenerate;
+    };
+
+    #if ( $char[HP][气血百分比] < 75) {
+        yun recover;
+    };
+    
+    #else {
+        #local times {@math.Eval{($char[HP][精神百分比] - 75) * $char[HP][最大精神] / 100 / 25}};
+        #local times {@math.Min{$times;50}};
+        #if { @char.SkillLevel{基本剑法} < 75 } {
+            #nop study book for $times;
+        };
+
+        #if { @char.SkillLevel{兰花坲穴手} < 75 } {
+            #nop study mijue for $times;
+        };
+    };
+
+    #if { $char[HP][当前精力] > $char[HP][最大精力] * 2 - 11 } {
+        tuna 10;
+    };
+
+    #elseif { $char[HP][内力百分比] < 20 } {
+        sleep;
+    };
+
+    #elseif { $char[HP][当前精力] > 50 && $char[HP][精力百分比] > 20 } {
+        tuna max;
+    };
+    
+    #elseif { $char[Skills][@char.GetJifaSkill{基本精力}][multiple] > 1.2 && $char[HP][精力百分比] < 80 } {
+        #if { @isTrue{$allow-recover} } {
+            yun recover;
+            tuna max;
+        };
+    };
+};
+
+#action {^你刚刚睡过一觉, 多睡对身体有害无益! } {#delay 15 sleep};
+#action {^你的精力增加了} {halt;study book for 20;sleep};
+
+#tick tn {tuna.tuna} 1;
+
+#alias {tnoff} {untick tn};
+#alias {tnon} {tick tn {tuna.tuna} 1};

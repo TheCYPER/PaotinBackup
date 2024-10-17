@@ -1,0 +1,44 @@
+#var sleeping 0;
+
+#action {^不一会儿，你就进入了梦乡。$E} {#var sleeping 1};
+
+#action {^你一觉醒来，精神抖擞地活动了几下手脚。$E} {#var sleeping 0};
+
+#action {^你附近没有%*这个人$} {clap 3; #delay 1 teacher};
+
+#alias dz.do {
+    #if { $sleeping } {
+        #return;
+    };
+    
+    #if { @char.IsBusy{} } {
+        #return
+    };
+     
+    #if { $char[HP][气血百分比] < 20 && $char[HP][内力百分比] < 80} {
+        #nop xue qingshan for finger 45;
+        #nop du sword book for 40;
+        sk;
+        hp -neili;
+        sleep;
+        #return;
+    };
+    
+    #if { $char[HP][食物] < 100 } {
+        eat ganliang;
+    };
+    
+    #if { $char[HP][饮水] < 100 } {
+        drink;
+    };
+    
+    #if { $char[HP][内力百分比] < 98 } {
+        dazuo max;
+    }; 
+    #else {
+        dazuo 10;
+    };
+}; 
+
+
+#tick dz {dz.do} 1;

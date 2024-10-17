@@ -1,0 +1,102 @@
+#var xizao[META] {
+    {NAME}      {xizao}
+    {DESC}      {洗澡机器人}
+    {AUTHOR}    {小萌新jxa zks}
+    {NOTE}      {先确认身上有：40 silver、水壶pot，没有其它可以倒水的容器。}
+};
+
+/*
+以下别名执行时，角色需先站在扬州ct。
+xz.dangpu	买药材，请注意当铺库存，如果缺货请寻找另外途径解决。
+xz.mutong	要木桶。
+xz.wenquan	装温泉水。
+xz.xizao	洗澡。
+*/
+
+///=== {
+// ## xz.dangpu
+//    买药材，请注意当铺库存，如果缺货请寻找另外途径解决。
+// };
+#alias xz.dangpu {
+    #if {"$gMapRoom[name]" == "中央广场"} {
+        s;e;
+        #if { $char[档案][年龄] == 14.0 } {
+            #delay 1 {buy im_212};
+            #delay 3 {buy im_947};
+            #delay 5 {buy im_190;bo gancao};
+            #delay 7 {buy im_212};
+            #delay 9 {w;n};
+            #return;
+        };
+        #delay 1 {buy im_212};
+        #delay 3 {buy im_947};
+        #delay 5 {buy im_190;bo gancao};
+        #delay 7 {w;n};
+    };
+    #else {okLog 请站到中央广场后执行xz.dangpu};
+};
+
+///=== {
+// ## xz.mutong
+//    要木桶，一个在线期只能要一次，再要需要先#send quit。
+// };
+#alias xz.mutong {
+    #if {"$gMapRoom[name]" == "中央广场"} {
+        xiaoyao.GotoThen 晋阳的广场 {
+            sw;w;w;w;s;
+            #if { $char[档案][年龄] == 14.0 } {
+                #delay 1 {ask hao about 帮助};
+                #delay 3 {give hao zi};
+                #delay 5 {ask hao about 交个朋友};
+                #delay 7 {ask hao about 独门秘方};
+                #delay 9 {ask hao about 木桶};
+                #delay 11 {n;e;e;e;ne};
+                #delay 12 {xiaoyao.Goto 扬州的中央广场};
+                #return;
+            };
+            #else {
+                #delay 1 {ask hao about 木桶};
+                #delay 3 {n;e;e;e;ne};
+                #delay 4 {xiaoyao.Goto 扬州的中央广场};
+            };
+        };
+    };
+    #else {okLog 请站到中央广场后执行xz.mutong};
+};
+
+///=== {
+// ## xz.wenquan
+//    装温泉水。
+// };
+#alias xz.wenquan {
+    w;w;w;w;nw;w;w;se;sd;
+    #delay 1 {fill pot};
+    #delay 2 {nu;nw;e;e;se;e;e;e;e};
+};
+
+///=== {
+// ## xz.xizao
+//    洗澡。
+// };
+#alias xz.xizao {
+    #line oneshot #action {^木桶边缘印了个编号：%d。} {
+        #var mutong-ID %%1;
+        okLog 获取到木桶id为 $mutong-ID;
+    };
+    #line oneshot #action {^你在木桶里泡了良久，跨了出来，全身筋骨非常轻松。} {
+        wear all;
+        #if { "$char[档案][性别]" == "男性" } {w} {e};
+        out;e;e;n;n;n
+    };
+    look mu tong;
+    s;s;s;w;w;give 30 silver to zhaodai;
+    #delay 1 {
+        enter;
+        #if { "$char[档案][性别]" == "男性" } {e} {w};
+        add zi to $mutong-ID;
+        add pi to $mutong-ID;
+        add sheng gancao to $mutong-ID;
+        do 3 pour tong;
+        xizao $mutong-ID;
+    };
+};

@@ -1,0 +1,42 @@
+#var sleeping 0;
+
+#action {^不一会儿，你就进入了梦乡。$E} {#var sleeping 1};
+
+#action {^你一觉醒来，精神抖擞地活动了几下手脚。$E} {#var sleeping 0; dazuo max};
+
+#alias dushu {
+    #if { $sleeping } {
+        #return;
+    };
+    
+    #if { @char.IsBusy{} } {
+        #return
+    };
+     
+    #if { $char[HP][内力百分比] < 20 && $char[HP][精神百分比] < 20} {
+        sk;
+        hp -neili;
+        sleep;
+    };
+    
+    #if { $char[HP][食物] < 100 } {
+        eat ganliang;
+    };
+    
+    #if { $char[HP][饮水] < 100 } {
+        drink;
+    };
+
+    
+    #if { $char[HP][精神百分比] >= 50 } {
+        du shu for 40;
+    };
+
+    #if { $char[HP][精神百分比] < 50 } {
+        yun regenerate;
+        du shu for 40;
+    };
+}; 
+
+
+#tick ds {dushu} 2;

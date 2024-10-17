@@ -1,0 +1,80 @@
+#var chaojing[META] {
+    {NAME}      {悠闲抄经2.0}
+    {DESC}      {使用【gj】获取任务，和【gd 口令】后自动去抄经和自动提交任务}
+    {AUTHOR}    {londey}
+    {NOTE}      {【gauto】全自动抄经，请搭配fullme图片查看器使用, 【cw 口令】自动提交前都可以修改口令}
+};
+#var gChaoJingWord idontknow;
+#var gChaoJingAutoReport 0;
+#var gChaoJingInterupt 0;
+#alias gogogo {
+    #class gogogo open;
+    #action {^经石峪 - [大元国] [野外] ★$} {
+        write jing;
+    };
+    
+    #action {^你默写良久，终于抄完了，看样子可以回去领工钱了。$} {
+        node walk sjy_sms;
+    };
+    
+    #action {^石门寺 - [大元国] [野外] ★$} {
+        #delay 3 {
+            ask yunyou sengren about done; 
+            report $gChaoJingWord;
+        };
+    };
+    
+    #action {^你大声回答道：%*$} {
+        #if {$gChaoJingInterupt == 1} {
+            errLog 终于结束了抄经任务，你的双手早已不停地颤抖！;
+            #class gogogo kill; 
+            #return;};
+        #if {$gChaoJingAutoReport == 0} {
+            xtt.Tick cj {errLog 又能抄经了，输入gj进行抄经吧。关闭计时器使用#untick cj} 5;
+        };
+        #if {$gChaoJingAutoReport == 1} {#delay 2 gauto};
+        #class gogogo kill;     
+    };
+    #class gogogo close;
+
+    node walk sms_sjy;
+};
+#nop 使用【gj】获取任务，和【gd 口令】后自动去抄经和自动提交任务;
+#nop 【gauto】全自动抄经，请搭配fullme图片查看器使用, 【cw 口令】自动提交前都可以修改口令;
+#alias gj {
+    #var gChaoJingInterupt 0;
+    #var gChaoJingAutoReport 0;
+    #untick cj; 
+    ask yunyou sengren about 工作;
+};
+#alias gauto { 
+    #var gChaoJingInterupt 0;
+    #var gChaoJingAutoReport 1;
+    ask yunyou sengren about 工作; 
+    errLog 已开启自动抄经，请确保LM fm且打开查看器;
+    #delay 2 gogogo;
+};
+#alias gd {
+    #if { "%1" == "" } errLog 未指定口令;
+    #else {
+        #var gChaoJingWord %1;
+        okLog 将口令设置成为了【$gChaoJingWord】;
+        okLog 任务提交前可使用【cw 口令】修改口令;
+        #delay 3 {gogogo};
+    };
+};
+
+#alias cw {
+    #if { "%1" == "" } errLog 未指定口令;
+    #else {
+        #var gChaoJingWord %1;
+        okLog 将口令设置成为了【$gChaoJingWord】;
+    };
+};
+
+#alias cj.stop {
+    errLog 手动停止抄经任务;
+    #var gChaoJingInterupt 1;
+    #var gChaoJingAutoReport 0;
+};
+

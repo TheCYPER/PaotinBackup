@@ -1,0 +1,431 @@
+#var slxinshou[META] {
+    {NAME}      {slxinshou}
+    {DESC}      {少林新手机器人}
+    {AUTHOR}    {hypertxt-虚八-少林}
+    {NOTE}      {需要站在天王殿，另外感谢大师的洗澡机器人，照着那个改的}
+};
+
+/*
+这个别名负责走一步停一下
+*/
+#alias walk.cycle.time { 
+    path.Walk.Stop; 
+    #delay walk.Resume {path.Walk.Resume} 2;
+};
+
+/*
+以下别名执行时，角色需先站在天王殿。
+xs.tiaoshui	    挑水
+xs.pichai	    劈柴
+xs.qiaozhong	敲钟
+xs.jigu         击鼓
+xs.songjing     诵经
+xs.chaodu       超度
+*/
+
+/*
+## xs.tiaoshui
+   挑水
+   挑水：挑水也是到少林斋房后面，直接carry mu tong，
+然后到少林山下的佛心井fill mu tong然后再回到斋房后院，
+fill shui gang，直到提示水缸满就行了，要注意回来的时
+候要一步一步走，走太快会将水洒掉，白跑一趟（此任务增
+加基本轻功）
+
+道果禅师说道：「厨房里现在缺水，请虚八拿着木桶从山下挑点水上来吧！
+注意厨房后院的木桶需要提着(carry)上下山，并且挑水的时候不要走得太快！」
+
+你在挑水的过程中发现自己的身体更加轻灵许多。
+你的「基本轻功」进步了！
+你将水桶里的水倒进了水缸，然后把木桶放回了原处，看了看水缸似乎再挑一趟水就可以把水缸装满了。
+
+你已经把整个水缸都装满了，然后把木桶放回了原处，可以向道果禅师汇报结果了！
+*/
+#alias xs.tiaoshui {
+    path.Walk 少林寺的天王殿-少林寺的厨房后院 {#delay 1 {carry mu tong}}; 
+
+    #act {^%!*从地上拎起一对木桶。} {
+        tiaoshui_loop;
+    };
+
+    #act {^你将水桶里的水倒进了水缸，然后把木桶放回了原处} {
+        tiaoshui_loop;
+    };
+
+    #act {你已经把整个水缸都装满了，然后把木桶放回了原处，可以向道果禅师汇报结果了!} {
+        path.Walk 少林寺的厨房后院-少林寺的天王殿 {ask daoguo about success};
+    }; 
+};
+
+#alias tiaoshui_loop {
+    event.UnHandle {GMCP.Move} {path.Walk};
+    carry mu tong;
+    path.Walk 少林寺的厨房后院-少林寺的佛心井 {#delay 1 {fill mu tong}};
+
+    #act {^%!*打上井水装满了自己手里的两个木桶。} {
+        event.Handle {GMCP.Move} {path.Walk} {$MODULE} {walk.cycle.time};
+        path.Walk 少林寺的佛心井-少林寺的厨房后院 {fill gang};
+        okLog 已完成挑水任务;
+    };
+};
+
+
+/*
+道果禅师说道：「又到练武的时候了，请虚八到鼓楼七层击鼓提醒大家一下。」
+okLog {\e[1;34m你好}
+~[5m\e[47;1m\e[1;31m
+你已经完成道果禅师交待的任务了，可以回去领赏了。
+*/
+
+#alias xs.jigu {
+    n;w;enter;up;up;up;up;up;up;
+    xuqi start;
+    #act {^你已经完成道果禅师交待的任务了，可以回去领赏了。} {
+        xuqi end;
+        #delay 1 {down;down;down;down;down;down;out;e;s};
+        #delay 3 {ask daoguo about success};
+    };
+    #action {~[5m\e[47;1m\e[1;31m} {hit drum};
+};
+
+
+#alias xs.qiaozhong {
+    n;e;enter;up;up;up;up;up;up;
+    xuqi start;
+    #act {^你已经完成道果禅师交待的任务了，可以回去领赏了。} {
+        xuqi end;
+        #delay 1 {down;down;down;down;down;down;out;w;s};
+        #delay 3 {ask daoguo about success};
+    };
+    #act {~[5m\e[47;1m\e[1;31m} {knock bell};
+};
+
+/*
+道果禅师说道：「劈柴任务需要虚八给厨房劈些木柴。」
+中年僧人说道：「虚八，厨房现在紧急需要一寸宽的柏柴六根，劈完以后上缴(jiao)到我这里来。劈柴(pi)前先找我领工具，干完活
+记得把柴刀还回来。」
+一寸宽的柏柴六根
+你从柴堆上拿走了一根粗糙的树枝。
+粗糙的树枝
+粗糙的（rough）大段的（large）光滑的（smooth）弯曲的（bending）小段的（small）直的（straight）
+树杈（crotch）树干（trunk）树根（root）树枝（branch）
+
+#local adj_2_id {
+    {粗糙的} {rough}
+    {大段的} {large}
+    {光滑的} {smooth}
+    {弯曲的} {bending}
+    {小段的} {small}
+    {直的} {straight}
+};
+
+#local part_2_id {
+    {树杈} {crotch}
+    {树干} {trunk}
+    {树根} {root}
+    {树枝} {branch}
+};
+
+失败：
+这根弯曲的树枝实在太小了，你一不小心就把木柴整个劈碎了。
+弯曲的树枝
+木墩上什么东西都没有，你怎么劈柴？
+
+成功：
+你往光滑的树杈上劈了一刀，劈下一根三寸宽的松柴。
+光滑的树杈 三寸宽的松柴
+
+jiao wood => 你上缴了一根一寸宽的柏柴，还需要再上缴五根木柴。
+pi 1 => 你现在正忙着呢。
+劈柴有busy 需要char.isbusy判断
+
+jiao wood
+你上缴了一根一寸宽的柏柴，把柴刀还给我再回去向道果禅师领赏。>
+最后一次jiao wood的提示 需要做act jiao dao
+然后去领赏就可以了
+*/
+
+#alias take_wood {
+    #var adj_2_id {
+        {粗糙} {rough}
+        {大段} {large}
+        {光滑} {smooth}
+        {弯曲} {bending}
+        {小段} {small}
+        {直} {straight}
+    };
+    
+    #var part_2_id {
+        {树杈} {crotch}
+        {树干} {trunk}
+        {树根} {root}
+        {树枝} {branch}
+    };
+
+    #act {^你从柴堆上拿走了一根%*的%*。} {
+        okLog %%1, %%2;
+        #delay 1 {put $adj_2_id[%%1] $part_2_id[%%2]};
+    };
+    take chai;
+};
+
+#alias check_inv {
+    i2; #nop 刷新客户端的背包内容;
+    #var chai_len_name {$pi_len_zh寸宽的$chai_name};
+    #var key @char.backpack.Query{Item; $chai_len_name};
+    okLog chai_name 有 $char.Item[$key][amount];
+};
+
+#alias check_finish {
+    #if { $char.Item[$key][amount] >= $chai_num} {
+        #$chai_num jiao $chai_len_name;
+        #delay 1 {jiao dao};
+        #delay 2 {e;s;s;e;s;s};
+        #delay 3 {ask daoguo about success};
+    };
+    #else {
+        #delay 1 {take_wood};
+    };
+};
+
+#alias xs.pichai {
+    #var zh2num {{一} {1} {二} {2} {三} {3}};
+
+    n;n;w;n;n;w;
+    
+    #act {^中年僧人说道：「%!*八，厨房现在紧急需要%*寸宽的%*柴%*根} {
+        #var pi_len $zh2num[%%1];
+        #var pi_len_zh %%1;
+        #var chai_name %%2柴;
+        #var chai_num @c2d{%%3};
+        okLog $pi_len, $chai_name, $chai_num;
+    };
+    
+    ask seng about 劈柴;
+
+    #delay 1 {ask seng about 柴刀};
+    #delay 3 {wield dao};
+    #delay 5 {take_wood};
+
+    #nop 不同的需要act的情况，不需要tick，可以一直触发;
+    #act {^你将一根%*放置在木墩上。} {
+        #delay 1 {pi $pi_len};
+    };
+
+    #act {^你往上%!*小心地劈了一刀} {
+        #delay 1 {pi $pi_len};
+    };
+
+    #act {^你往%!*上劈了一刀，劈下}{
+        #delay 1 {pi $pi_len};
+    };
+
+    #act {^这根%!*实在太小了，你一不小心就把木柴整个劈碎了。} {
+        check_inv;
+        check_finish;
+    };
+
+    #act {^你用力过大，一不小心把整根木柴都劈碎了。} {
+        check_inv;
+        check_finish;
+    };
+
+    #act {^木墩上什么东西都没有，你怎么劈柴？} {
+        check_inv;
+        check_finish;
+    };
+};
+
+
+/*
+#alias xs.pichai {
+    #var pi_len;
+    #var zh2num {{一} {1} {二} {2} {三} {3}};
+
+    n;n;w;n;n;w;
+    
+    #act {^中年僧人说道：「%!*八，厨房现在紧急需要%*寸宽的$} {
+        #var pi_len $zh2num[%%1];
+    };
+    
+    ask seng about 劈柴;
+
+    #delay 1 {ask seng about 柴刀};
+    #delay 3 {wield dao};
+
+    #delay 5 {take_wood};
+    #tick pi_chai {
+        #nop 这个tick是用来劈柴的 只有完成任务才会停;
+        
+        #act {^这根%!*实在太小了，你一不小心就把木柴整个劈碎了。} {
+            #tick jiao_wood {
+                #nop 这个tick是用来上交柴火的 只有三种情况会停;
+
+                #act {^你上缴的%!*和我要的%!*似乎并不相符啊。} {
+                    take_wood;
+                    #untick jiao_wood;
+                };
+
+                #act {^你要上缴什么东西？}{
+                    take_wood;
+                    #untick jiao_wood;
+                };
+
+                #act {^你上缴了%!*，把柴刀还给我再回去向道果禅师领赏。} {
+                    #nop 这种情况就不需要再拿新的wood了;
+                    jiao dao;
+                    #untick jiao_wood;
+                    #untick pi_chai;
+                    e;s;s;e;s;s
+                    ask daoguo about success;
+                };
+
+                jiao wood;
+            } 1;
+        };
+        
+        pi $pi_len;
+    } 1;
+
+    #untick pi_chai;
+};
+*/
+
+/*
+#alias xs.pichai_test1 {
+    
+    #local pi_len;
+    #local chai_id;
+
+    #act {^中年僧人说道：「%!*八，厨房现在紧急需要%*寸宽的$} {
+        #var pi_len $zh2num[%%1];
+    };
+
+    #act {^你从柴堆上拿走了一根%*的%*。} {
+        okLog %%1, %%2;
+        #local adj $adj_2_id[%%1];
+        #local part $part_2_id[%%2];
+        #local chai_id {$adj $part};
+        okLog $chai_id;
+    };
+ };
+*/
+
+/*
+道果禅师说道：「今天的早课安排在般若堂六部，请虚八诵唱法华经的妙法莲华经方便品第二(50)
+佛经可以从藏经楼找到或者找藏经楼的玄彦大师租借！」
+
+2024-08-21 15:34:28 INPUT: give shu to hcc npc
+你归还了借走的佛经「阿含经」。
+你给玄彦大师一本阿含经。
+*/
+/*
+#nop ;
+#var gsjShu {
+    {阿含经} {
+        {中阿含七法品善法经第一} {1}
+        {中阿含七法品昼度树经第二} {23}
+        {中阿含七法品城喻经第三} {35}
+        {中阿含七法品水喻经第四} {65}
+        {中阿含七法品木积喻经第五} {87}
+        {中阿含七法品善人往经第六} {132}
+        {中阿含七法品世间福经第七} {150}
+        {中阿含七法品七日经第八} {166}
+        {中阿含七法品七车经第九} {194}
+        {中阿含七法品漏尽经第十} {233}
+    }
+    {般若经} {
+        {初分缘起品第一} {1}
+    }
+    {波罗蜜多心经} {
+        {波罗蜜多心经} {1}
+    }
+    {大般涅磐经} {
+        {寿命品第一} {1}
+        {金刚身品第二} {386}
+        {名字功德品第三} {434}
+    }
+    {法华经} {
+        {妙法莲华经序品第一} {1}
+        {妙法莲华经方便品第二} {69}
+        {妙法莲华经譬喻品第三} {149}
+    }
+    {华严经} {
+        {世主妙严品第一} {1}
+    }
+    {金刚经} {
+    }
+    {维摩经} {
+        {佛国品第一} {1}
+        {方便品第二} {45}
+        {弟子品第三} {62}
+        {菩萨品第四} {118}
+        {文殊师利问疾品第五} {163}
+        {不思议品第六} {201}
+        {观众生品第七} {230}
+        {佛道品第八} {265}
+        {入不二法门品第九} {294}
+        {香积佛品第十} {319}
+        {菩萨行品第十一} {349}
+        {见阿閦佛品第十二} {381}
+        {法供养品第十三} {402}
+        {嘱累品第十四} {423}
+    }
+    {无量寿经} {
+        {无量寿经上卷} {1}
+        {无量寿经下卷} {118}
+    }
+};
+
+#alias walk.cycle.check_pos { 
+    #if {"$gMapRoom[name]" == $location} {
+        path.Walk.Stop;
+
+        fan_page;
+        chanting $sj.page $sj.content;
+        #var finish_chanting 1;
+
+        path.Walk.Resume;
+    };
+    #elseif {"$gMapRoom[name]" == "藏经阁一楼" && $finish_chanting} {
+        path.Walk.Stop;
+        #delay 1 {give shu to hcc npc};
+        #delay 3 {path.Walk.Resume};
+        #delay 5 {path 少林寺的藏经阁一楼-少林寺的天王殿 {
+            #delay 10 {ask daoguo about success};
+        }};
+    };
+};
+
+#alias fan_page {
+    #math {pagenum} {$gsjShu[$gsjShuName][$gsjChapter] + $gsjPage - 1};
+    #send page $sj.page;
+};
+
+#alias {xs.songjing} {
+    #nop 今天的早课安排在般若堂八部，请虚八诵唱般若经的初分缘起品第一(13);
+    #act {道果禅师说道：「今天的早课安排在%*，请%!*诵唱%*的%*} {
+        #if {%%%2 == "金刚经"} {
+            #delay 1 {ask daoguo about success};
+        };
+        okLog 念经：%%1 %%2 %%3;
+        #var location %%1;
+        #var jing_name %%2;
+        #var phase %%3;
+    };
+
+    #action {================================================================\n%a\n================================================================}{   
+        #var sj.content %1;
+        #replace sj.content {=}{};
+        #replace sj.content { }{};
+        #replace sj.content {\n}{};
+        #showme $sj.content;
+    };
+
+    syth.Wait{path.Walk 少林寺的天王殿-少林寺的藏经阁一楼 {#delay 1 {jie $jing_name}};
+
+    #var finish_chanting 0;
+    event.Handle {GMCP.Move} {path.Walk} {$MODULE} {walk.cycle.check_pos};
+    path.Walk 少林寺的藏经阁一楼-遍历少林寺-50;
+};
+*/

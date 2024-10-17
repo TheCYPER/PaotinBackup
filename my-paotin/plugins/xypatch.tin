@@ -1,0 +1,13 @@
+#action {{*UTF8}{^}{╭─|┌─}{(─)*}─{\p{Han}+}─{(─|┬)*}──{┐|╮}$E} {
+        #var gMapRoom[node]         {%5};
+        #var gMapRoom[nodeLinks]    {};
+    
+        #class map.GetNodeInfo open;
+
+        #action {^│%S%s◇%s%S%s│%S%s│{|ID=map/getnode}$} {
+
+            #var {gMapRoom[nodeLinks][%%6]} {%%1};
+        };
+
+        #class map.GetNodeInfo close;
+};

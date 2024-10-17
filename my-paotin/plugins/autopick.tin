@@ -1,0 +1,12 @@
+#act {^%*银票%*(%*)} {get cash};
+#act {^%*铜板%*(%*)} {get coin};
+#act {^%*白银%*(%*)} {get silver};
+#act {^%*黄金%*(%*)} {get gold};
+
+#act {^%*长剑%*(%*)} {get changjian};
+#act {^%*铁甲%*(%*)} {get armor};
+
+#act {^%*蝙蝠血甲%*(%*)} {get bianfuxue jia};
+
+#act {^%*金项链%*(%*)} {get golden necklace};
+#act {^%*金戒指%*(%*)} {get golden ring};

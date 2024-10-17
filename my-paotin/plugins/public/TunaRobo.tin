@@ -1,0 +1,55 @@
+#var sleeping 0;
+
+#action {^不一会儿，你就进入了梦乡。$E} {#var sleeping 1};
+#action {^你一觉醒来，精神抖擞地活动了几下手脚。$E} {#var sleeping 0};
+
+#alias {tuna.tuna} {
+    #if { $sleeping } {
+        #return;
+    };
+
+    #if { @char.IsBusy{} } {
+        #return;
+    };
+
+    #if { $char[HP][食物] < 10 } {
+        eat $char[favorite][food];
+        eat bocai fentiao;
+        eat mala doufu;
+        eat suji;
+    };
+
+    #if { $char[HP][饮水] < 10 } {
+        eat $char[favorite][water];
+        drink;
+    };
+
+    #if { $char[HP][当前精力] > $char[HP][最大精力] * 2 - 20 } {
+        tuna 10;
+    };
+
+    #elseif { $char[HP][精神百分比] > 55 } {
+        tuna max;
+    };
+    
+    #elseif { $char[HP][精神百分比] <= 30 && $char[HP][内力百分比] > 10 } {
+        yun regenerate;
+        tuna max;
+    };
+
+    #elseif { $char[HP][精神百分比] <= 10 && $char[HP][内力百分比] <= 10 } {
+        lian finger 30;
+        sk;
+        hp;
+        sleep;
+    };
+};
+
+#action {^你刚刚睡过一觉, 多睡对身体有害无益! } {#delay 15 sleep};
+
+#tick tn {tuna.tuna} 1;
+
+#alias {tnoff} {untick tn};
+#alias {tnon} {tick tn {tuna.tuna} 1};
+
+#nop sleep; tuna max; tuna 10; yun regenerate; tuna max; yun regenerate; tuna 10; sleep;
